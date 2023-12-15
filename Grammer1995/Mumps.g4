@@ -13,14 +13,19 @@
      W *
      Commands: tstart, trestart, trollback
      Add addtional special variables ($ECode, $Truth)
-     Add addition functions ($Ascii,$Char,$Data, $Find, $FN, $ETRAP, $Next, $Randow, $Select, $Text, $View)
+     Add addition functions ($Ascii,$Char,$Data, $Find, $FN, $ETRAP, $Get $Next, $Query, $Randon, $Select, $Text, $View)
      Add Global UCI/Namespace
      Add Pattern Match codes
      Add ssvns
 
+ Recent changes:
+     12/15/23 - Fixed operator presidence
+
 
  Created by Jerry Goodnough
+
 */
+
 
 grammar Mumps;
 
@@ -194,7 +199,7 @@ hangCommandId:
  ;
 
 hangCommand:
-    hangCommandId (postcondRef)? SPACE hangCommandId (COMMA hangArg);
+    hangCommandId (postcondRef)? SPACE hangArg (COMMA hangArg);
 
 hangArg:
     '@' expr (postcondRef)?
@@ -548,7 +553,7 @@ specialVariable:
 
 horlogVariableId:
  '$H'
- | '$i'
+ | '$H'
  | '$HORLOG'
  | '$horlog'
  | '$Horlog'
@@ -583,7 +588,24 @@ funtion:
  extractFunction
  | orderFunction
  | pieceFunction
+ | selectFunction
  ;
+
+selectFunctionId:
+ '$S'
+ | '$s'
+ | '$SELECT'
+ | '$select'
+ | '$Select'
+ ;
+
+selectPair:
+  expr ':' expr
+  ;
+
+selectFunction:
+  selectFunctionId LEFTPAREN selectPair ( ',' selectPair)* RIGHTPAREN
+  ;
 
 extractFunctionId:
  '$E'
@@ -635,10 +657,30 @@ scinote:
 expr:
     varRef # variable
     | LEFTPAREN expr RIGHTPAREN # paren
+    | uop expr #unary
+    | expr binop expr # binaryop
+    | expr '?' expr # patern  // Todo: fix for patterns.
+    | extrinFunctionCall # extrinCall
+    | funtion # function
+    | specialVariable # svn
+    | partialRef # pRef
+    | '@' varRef # indirect
+    | scinote #scientifcNotation
+    | NUMBER # number
+    | STRING_LITERAL # stringLit
+    ;
+
+   uop:
+    ( '\''  | '-'  | '+' )
+    ;
+
+   binop:
+     ( '+' |  '-'  |  '*' | '\\' | '/' | '#' |  '=' | '>'  | '<'   '\'<' |  '\'>' | '_' | '**' | '!' | '&' );
+
+  /*
     | '\'' expr # not
     | '-' expr # unaryMinus
     | '+' expr # unaryPlus
-    | extrinFunctionCall # extrinCall
     | expr '+' expr # addtion
     | expr '-' expr # subtraction
     | expr '*' expr # multipy
@@ -654,15 +696,8 @@ expr:
     | expr '**' expr # exponent
     | expr '!' expr # or
     | expr '&' expr # and
-    | expr '?' expr # patern // Todo: fix for patterns.
-    | funtion # function
-    | specialVariable # svn
-    | partialRef # pRef
-    | '@' varRef # indirect
-    | scinote #scientifcNotation
-    | NUMBER # number
-    | STRING_LITERAL # stringLit
-    ;
+    | expr '?' expr # patern) // Todo: fix for patterns.
+     */
 
 id:
     'B'
@@ -795,30 +830,3 @@ COMMENT
     : ';' ~[\r\n]*
     ;
 
-
-fragment A : [aA]; // match either an 'a' or 'A'
-fragment B : [bB];
-fragment C : [cC];
-fragment D : [dD];
-fragment E : [eE];
-fragment F : [fF];
-fragment G : [gG];
-fragment H : [hH];
-fragment I : [iI];
-fragment J : [jJ];
-fragment K : [kK];
-fragment L : [lL];
-fragment M : [mM];
-fragment N : [nN];
-fragment O : [oO];
-fragment P : [pP];
-fragment Q : [qQ];
-fragment R : [rR];
-fragment S : [sS];
-fragment T : [tT];
-fragment U : [uU];
-fragment V : [vV];
-fragment W : [wW];
-fragment X : [xX];
-fragment Y : [yY];
-fragment Z : [zZ];
